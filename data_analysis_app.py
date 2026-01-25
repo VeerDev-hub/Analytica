@@ -142,8 +142,9 @@ def calculate_stats(df):
 
 def main():
     # Header
-    st.markdown("# 📊 Data Analysis Studio")
-    st.markdown("Fast local data analysis with instant results")
+    st.markdown("# 📊 Analytica")
+    st.markdown("Automated Data Analysis & Intelligence Studio")
+
     
     # Sidebar
     with st.sidebar:
@@ -511,7 +512,7 @@ def show_export(df):
 st.markdown("""
 <hr>
 <p style="text-align:center; color:gray;">
-Analytica • Automated Data Analysis Studio "Analytica"• Made with love by Veer
+Analytica • Automated Data Analysis Studio • Made with love by Veer
 </p>
 """, unsafe_allow_html=True)
 
