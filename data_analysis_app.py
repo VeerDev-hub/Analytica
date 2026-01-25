@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
-    page_title="Data Analysis Studio",
+    page_title="Analytica Studio",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -35,13 +35,72 @@ st.markdown("""
 
 @st.cache_data
 def load_data(uploaded_file):
-    """Load data from uploaded file"""
+    """Load, clean, and auto-infer data types"""
     try:
+        # Load
         if uploaded_file.name.endswith('.csv'):
             df = pd.read_csv(uploaded_file)
         else:
             df = pd.read_excel(uploaded_file, engine='openpyxl')
+
+        # ---------------- CLEANING PIPELINE ----------------
+
+        # 1. Detect and fix malformed CSV headers (handles files like NVIDIA_STOCK.csv)
+        if df.shape[0] > 2:
+            first_col_vals = df.iloc[:2, 0].astype(str).str.lower()
+            
+            # Check if first column contains metadata (Ticker, Date)
+            if 'ticker' in first_col_vals.values and 'date' in first_col_vals.values:
+                # This is a malformed CSV - use first row as indices
+                # Create proper headers from the first data row labels
+                actual_headers = df.iloc[2:, 0].name  # Will be "Price" or similar
+                df = df.iloc[2:].reset_index(drop=True)
+                
+                # The first column should become the index/Date column
+                if 'price' in df.columns[0].lower() or 'date' in df.iloc[:5, 0].astype(str).str.lower().values:
+                    df = df.rename(columns={df.columns[0]: 'Date'})
+                    df['Date'] = df['Date'].astype(str)
+        
+        # 2. Drop fully empty rows
+        df = df.dropna(how="all")
+
+        # 3. Strip and clean column names
+        df.columns = [str(col).strip() for col in df.columns]
+        df.columns = df.columns.str.replace(r'\s+', ' ', regex=True)  # Normalize spaces
+        
+        # Remove duplicate columns by keeping first occurrence
+        df = df.loc[:, ~df.columns.duplicated(keep='first')]
+
+        # 4. Auto convert numeric-looking columns
+        for col in df.columns:
+            if col.lower() in ['date', 'time', 'datetime']:
+                continue  # Skip date columns
+                
+            try:
+                # First try direct conversion
+                converted = pd.to_numeric(df[col], errors='coerce')
+                
+                # If that fails, try removing common formatting
+                if converted.notna().sum() < len(df) * 0.5:  # Less than 50% converted
+                    try:
+                        # Remove currency symbols, % signs, thousand separators
+                        cleaned = df[col].astype(str).str.replace('[$%,]', '', regex=True).str.strip()
+                        converted = pd.to_numeric(cleaned, errors='coerce')
+                    except:
+                        pass
+                
+                # If we got numeric values (at least 50% converted), use them
+                if converted.notna().sum() >= len(df) * 0.5:
+                    df[col] = converted
+            except:
+                # Skip columns that can't be converted
+                pass
+
+        # 5. Reset index after cleaning
+        df.reset_index(drop=True, inplace=True)
+
         return df
+
     except Exception as e:
         st.error(f"Error loading file: {str(e)}")
         return None
@@ -177,7 +236,19 @@ def show_statistics(df):
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     
     if len(numeric_cols) == 0:
-        st.warning("No numeric columns found")
+        st.error("❌ No numeric columns detected!")
+        st.markdown("### Debug Info:")
+        col_info = get_column_info(df)
+        st.dataframe(col_info, use_container_width=True)
+        
+        st.markdown("### Tips to fix:")
+        st.markdown("""
+        - Check that numeric columns don't have letters or symbols
+        - Try removing currency symbols ($, €, etc)
+        - Try removing thousand separators (,)
+        - Check for extra spaces or special characters
+        - Ensure numbers aren't in quote marks
+        """)
         return
     
     # Statistics table
@@ -436,6 +507,13 @@ def show_export(df):
     st.markdown("### Sample Data")
     n_rows = st.slider("Rows to display", 1, min(100, len(df)), 10)
     st.dataframe(df.head(n_rows), use_container_width=True)
+
+st.markdown("""
+<hr>
+<p style="text-align:center; color:gray;">
+Analytica • Automated Data Analysis Studio "Analytica"• Made with love by Veer
+</p>
+""", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
