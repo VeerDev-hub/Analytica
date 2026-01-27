@@ -1,0 +1,127 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Data & Uploads
+uploads/
+*.csv
+*.xlsx
+*.xls
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Temporary Files
+*.tmp
+*.bak
+*.temp
+*~
+.~lock*
+
+# Cache
+.cache/
+*.cache
+
+# Session Files
+flask_session/
+session/
+
+# Streamlit (Old)
+.streamlit/
+streamlit_config.toml
+
+# Project Specific
+instance/
+.webassets-cache
+
+# Compiled files
+*.o
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+
+# Package Files
+*.tar.gz
+*.zip
+*.rar
+
+# Node (if using frontend build tools in future)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Production
+dist/
+build/
+*.min.js
+*.min.css
