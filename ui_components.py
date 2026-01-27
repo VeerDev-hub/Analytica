@@ -6,9 +6,6 @@ from datetime import datetime
 import io
 
 
-# --------------------------------------------------
-# PAGE SETUP
-# --------------------------------------------------
 
 def setup_page_config():
     st.set_page_config(
@@ -85,9 +82,7 @@ def apply_global_theme():
     """, unsafe_allow_html=True)
 
 
-# --------------------------------------------------
-# HEADER & FOOTER
-# --------------------------------------------------
+
 
 def show_header():
     st.markdown("""
@@ -97,6 +92,9 @@ def show_header():
     </p>
     <hr style="margin-top:1rem; margin-bottom:2rem; border-color:#1e293b;">
     """, unsafe_allow_html=True)
+    st.markdown("Analytica Studio")
+    st.markdown("Fast local data analysis with instant results")
+
 
 
 def show_footer():
@@ -108,9 +106,6 @@ def show_footer():
     """, unsafe_allow_html=True)
 
 
-# --------------------------------------------------
-# DATA OVERVIEW
-# --------------------------------------------------
 
 def display_metrics_row(df):
     col1, col2, col3, col4 = st.columns(4)
@@ -135,9 +130,6 @@ def display_data_preview(df, rows=10):
     st.dataframe(df.head(rows), use_container_width=True)
 
 
-# --------------------------------------------------
-# EXPORT
-# --------------------------------------------------
 
 def export_as_csv(df, filename=None):
     if filename is None:
@@ -155,9 +147,6 @@ def export_as_excel(df, filename=None):
                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 
-# --------------------------------------------------
-# QUALITY & INSIGHTS
-# --------------------------------------------------
 
 def display_quality_assessment(df):
     completeness = (1 - df.isna().sum().sum() / (df.shape[0] * df.shape[1])) * 100
@@ -194,9 +183,6 @@ def display_insights_cards(insights):
         c2.info(f"🔗 Highest Correlation: {p['columns'][0]} ↔ {p['columns'][1]} ({p['correlation']:.3f})")
 
 
-# --------------------------------------------------
-# SIDEBAR
-# --------------------------------------------------
 
 def sidebar_file_uploader():
     with st.sidebar:
