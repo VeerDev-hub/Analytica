@@ -32,7 +32,7 @@ def setup_custom_styling():
 
 
 def show_header():
-    st.markdown("#Analytica Studio")
+    st.markdown("Analytica Studio")
     st.markdown("Fast local data analysis with instant results")
 
 
