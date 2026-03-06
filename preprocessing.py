@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import io
 
 
 def load_and_clean_data(uploaded_file):
@@ -15,11 +16,31 @@ def load_and_clean_data(uploaded_file):
         raise Exception(f"Error loading file: {str(e)}")
 
 
+def load_and_clean_data_from_bytes(file_bytes, file_name):
+    try:
+        file_buffer = io.BytesIO(file_bytes)
+        df = _load_file_from_name(file_buffer, file_name)
+        df = _fix_malformed_headers(df)
+        df = _remove_empty_rows(df)
+        df = _clean_column_names(df)
+        df = _convert_numeric_columns(df)
+        df = _reset_index(df)
+        return df
+    except Exception as e:
+        raise Exception(f"Error loading file: {str(e)}")
+
+
 def _load_file(uploaded_file):
     if uploaded_file.name.endswith('.csv'):
         return pd.read_csv(uploaded_file)
     else:
         return pd.read_excel(uploaded_file, engine='openpyxl')
+
+
+def _load_file_from_name(file_buffer, file_name):
+    if file_name.endswith('.csv'):
+        return pd.read_csv(file_buffer)
+    return pd.read_excel(file_buffer, engine='openpyxl')
 
 
 def _fix_malformed_headers(df):

@@ -120,3 +120,59 @@ def get_statistical_insights(df):
                 'correlation': max_corr_val
             }
     return insights
+
+
+def get_null_hotspots(df, top_n=5):
+    if df.empty:
+        return pd.DataFrame(columns=["Column", "Missing", "Missing %"])
+    missing = pd.DataFrame({
+        "Column": df.columns,
+        "Missing": df.isna().sum().values,
+        "Missing %": ((df.isna().sum() / len(df)) * 100).round(2).values,
+    })
+    missing = missing[missing["Missing"] > 0].sort_values(["Missing %", "Missing"], ascending=False)
+    return missing.head(top_n)
+
+
+def get_cardinality_warnings(df, unique_ratio_threshold=0.9, unique_count_threshold=20):
+    warnings = []
+    row_count = len(df)
+    if row_count == 0:
+        return pd.DataFrame(columns=["Column", "Unique Values", "Unique Ratio", "Risk"])
+
+    object_cols = df.select_dtypes(include=["object", "category"]).columns
+    for col in object_cols:
+        unique_count = df[col].nunique(dropna=True)
+        unique_ratio = unique_count / row_count
+        if unique_ratio >= unique_ratio_threshold and unique_count >= unique_count_threshold:
+            warnings.append({
+                "Column": col,
+                "Unique Values": unique_count,
+                "Unique Ratio": round(unique_ratio, 2),
+                "Risk": "Identifier-like or too high-cardinality for grouping",
+            })
+    return pd.DataFrame(warnings)
+
+
+def detect_numeric_as_text(df, conversion_threshold=0.8, min_matches=5):
+    findings = []
+    text_cols = df.select_dtypes(include=["object", "category"]).columns
+
+    for col in text_cols:
+        series = df[col].dropna().astype(str).str.strip()
+        if series.empty:
+            continue
+        cleaned = series.str.replace(r"[$,%\s,]", "", regex=True)
+        converted = pd.to_numeric(cleaned, errors="coerce")
+        convertible_count = converted.notna().sum()
+        convertible_ratio = convertible_count / len(series)
+        if convertible_count >= min_matches and convertible_ratio >= conversion_threshold:
+            findings.append({
+                "Column": col,
+                "Convertible Values": convertible_count,
+                "Checked Values": len(series),
+                "Convertible Ratio": round(convertible_ratio, 2),
+                "Suggestion": "Convert this text column to numeric before analysis",
+            })
+
+    return pd.DataFrame(findings)
